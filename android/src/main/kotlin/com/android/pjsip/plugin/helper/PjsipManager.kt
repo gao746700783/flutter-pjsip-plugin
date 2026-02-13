@@ -1,0 +1,236 @@
+package com.android.pjsip.plugin.helper
+
+import android.app.Application
+import android.content.Context
+import android.hardware.camera2.CameraManager
+import com.android.pjsip.plugin.ui.CallActivity
+import io.flutter.plugin.common.EventChannel
+import net.gotev.sipservice.BroadcastEventReceiver
+import net.gotev.sipservice.Logger
+import net.gotev.sipservice.MediaState
+import net.gotev.sipservice.SipAccountData
+import net.gotev.sipservice.SipAccountTransport
+import net.gotev.sipservice.SipServiceCommand
+import org.pjsip.pjsua2.pjsip_status_code
+
+class PjsipManager {
+
+    companion object {
+        private const val TAG = "PjsipManager"
+        val instance: PjsipManager by lazy { PjsipManager() }
+    }
+
+    private var isInitialized = false
+
+    private lateinit var mContext: Context
+    private var mStatusSink: EventChannel.EventSink? = null
+    private var accountID: String? = null
+    private var mRegCode: Int? = pjsip_status_code.PJSIP_SC_NULL
+
+    @Synchronized
+    fun getInstance(): PjsipManager {
+        return instance
+    }
+
+    fun init(context: Context, eventSink: EventChannel.EventSink?) {
+        if (this.isInitialized) {
+            Logger.debug(TAG, "PjsipManager is already initialized.")
+            return
+        }
+        Logger.error(TAG, "init called...")
+        this.isInitialized = true
+        this.mContext = context
+        if (this.mContext !is Application) {
+            Logger.error(TAG, "Recommended to use Application instance.")
+        }
+        this.mStatusSink = eventSink
+
+        Logger.setLogLevel(Logger.LogLevel.DEBUG)
+        SipServiceCommand.enableSipDebugLogging(true)
+        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        SipServiceCommand.setCameraManager(cameraManager)
+        SipServiceCommand.start(context)
+        //requestPermissions()
+        this.mReceiver.register(context)
+    }
+
+    fun unInit() {
+        Logger.debug(TAG, "unInit called...")
+        this.isInitialized = false
+        this.mStatusSink = null
+        this.accountID = null
+        this.mRegCode = pjsip_status_code.PJSIP_SC_NULL
+        this.mReceiver.unregister(mContext)
+        SipServiceCommand.stop(mContext)
+    }
+
+    fun registerWithCheck(
+        userName: String,
+        userPwd: String,
+        serverHost: String,
+        serverPort: String,
+        displayName: String,
+    ) {
+        Logger.debug(
+            TAG,
+            "login: userName:$userName, userPwd:$userPwd, serverHost:$serverHost, serverPort:$serverPort,displayName:$displayName"
+        )
+        val mAccount = SipAccountData().apply {
+            setUsername(userName)
+            setPassword(userPwd)
+            setHost(serverHost)
+            setPort(serverPort.toInt().toLong())
+            setRealm("*")
+            setTransport(SipAccountTransport.TCP)
+        }
+        val checkId = getAccountIdByIdUri(mAccount)
+        if (checkId == this.accountID) {
+            Logger.debug(TAG, "login: accountID is same, just check current status")
+            val isReg = checkRegStatus()
+            if (isReg) {
+                Logger.debug(TAG, "login: already registered")
+                return
+            }
+        }
+        val mAccountId = SipServiceCommand.setAccount(mContext, mAccount)
+        Logger.debug(TAG, "login: mAccount:$mAccount, mAccountId $mAccountId")
+    }
+
+    private fun getAccountIdByIdUri(account: SipAccountData): String {
+        if ("*" == account.realm)  //return "sip:" + username;
+            return "sip:" + account.username + "@" + account.host + ":" + account.port
+
+        return "sip:" + account.username + "@" + account.realm
+    }
+
+    private fun checkRegStatus(): Boolean {
+        Logger.debug(TAG, "checkRegStatus: accountID: ${this.accountID}")
+        if (mRegCode == pjsip_status_code.PJSIP_SC_OK) {
+            return true
+        }
+        return false
+    }
+
+    fun unRegister() {
+        if (accountID.isNullOrEmpty().not()) {
+            SipServiceCommand.removeAccount(mContext, accountID)
+            accountID = null
+        }
+    }
+
+
+    //语音呼叫
+    fun audioCall(callNumber: String?) {
+        try {
+            SipServiceCommand.makeCall(mContext, accountID, callNumber)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    //视频呼叫
+    fun videoCall(callNumber: String?) {
+        try {
+            SipServiceCommand.makeCall(mContext, accountID, callNumber, true, false)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private var mReceiver: BroadcastEventReceiver = object : BroadcastEventReceiver() {
+        override fun onRegistration(accountID: String, registrationStateCode: Int) {
+            super.onRegistration(accountID, registrationStateCode)
+
+            this@PjsipManager.mRegCode = registrationStateCode
+            this@PjsipManager.mStatusSink?.success(registrationStateCode)
+            if (registrationStateCode == pjsip_status_code.PJSIP_SC_OK) {
+                this@PjsipManager.accountID = accountID
+            }
+        }
+
+        override fun onIncomingCall(
+            accountID: String,
+            callID: Int,
+            displayName: String,
+            remoteUri: String,
+            isVideo: Boolean
+        ) {
+            super.onIncomingCall(accountID, callID, displayName, remoteUri, isVideo)
+            CallActivity.startActivityIn(
+                receiverContext,
+                accountID,
+                callID,
+                displayName,
+                remoteUri,
+                isVideo
+            )
+        }
+
+        override fun onOutgoingCall(
+            accountID: String,
+            callID: Int,
+            number: String,
+            isVideo: Boolean,
+            isVideoConference: Boolean,
+            isTransfer: Boolean
+        ) {
+            super.onOutgoingCall(accountID, callID, number, isVideo, isVideoConference, isTransfer)
+            CallActivity.startActivityOut(
+                receiverContext,
+                accountID,
+                callID,
+                number,
+                isVideo,
+                isVideoConference
+            )
+//            viewModel.updateCallID(callID.toString())
+//            //viewModel.updateDisplayName(displayName)
+//            //viewModel.updateRemoteUri(remoteUri)
+//            viewModel.updateNumber(number)
+//            viewModel.updateIsVideo(isVideo)
+//            viewModel.updateIsVideoConference(isVideoConference)
+        }
+
+        override fun onCallState(
+            accountID: String?,
+            callID: Int,
+            callStateCode: Int,
+            callStatusCode: Int,
+            connectTimestamp: Long
+        ) {
+            super.onCallState(accountID, callID, callStateCode, callStatusCode, connectTimestamp)
+//            viewModel.updateCallStateCode(callStateCode)
+//            if (callStateCode == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
+//                SipServiceCommand.setCallMute(this@SinglePageActivity, accountID, callID, true)
+//            }
+        }
+
+        override fun onVideoSize(width: Int, height: Int) {
+            super.onVideoSize(width, height)
+            // 根据width,height 重新设置 mRemoteSurface宽高
+//            val layoutParams = mLayoutCallInfo.getLayoutParams() as ConstraintLayout.LayoutParams
+//            ConstraintSet constraintSet = new ConstraintSet();
+//            constraintSet.clone(mLayoutCallInfo);
+//            constraintSet.setDimensionRatio(mLayoutCallInfo,"");
+//            constraintSet.applyTo(mLayoutCallInfo);
+//            layoutParams.width = dp2px(CallActivity.this,width);
+//            layoutParams.height = dp2px(CallActivity.this,height);
+//            mLayoutCallInfo.setLayoutParams(layoutParams);
+        }
+
+        override fun onCallMediaState(
+            accountID: String?,
+            callID: Int,
+            stateType: MediaState?,
+            stateValue: Boolean
+        ) {
+            super.onCallMediaState(accountID, callID, stateType, stateValue)
+//            if (stateType == MediaState.LOCAL_MUTE) {
+//                viewModel.updateCallVoiceMute(stateValue)
+//            } else if (stateType == MediaState.LOCAL_VIDEO_MUTE) {
+//                viewModel.updateCallVideoMute(stateValue)
+//            }
+        }
+    }
+
+}
