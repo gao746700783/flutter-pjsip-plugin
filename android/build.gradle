@@ -48,6 +48,10 @@ android {
         minSdk = 21
     }
 
+    buildFeatures {
+        viewBinding = true
+    }
+
     dependencies {
         //noinspection GradleDependency
         implementation 'androidx.appcompat:appcompat:1.0.2'
@@ -69,4 +73,7 @@ android {
             }
         }
     }
+}
+dependencies {
+    implementation 'androidx.databinding:viewbinding:8.1.0'
 }

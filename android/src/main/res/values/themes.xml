@@ -1,0 +1,10 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+  
+  <style name="Base.Meeting" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <item name="android:colorBackground">@color/main_bg_color</item>
+    <item name="android:statusBarColor">@color/status_bar_background_dark</item>
+    <item name="android:navigationBarColor">@color/navigation_bar_background_dark</item>
+    <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
+    <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="27">shortEdges</item>
+  </style>
+</resources>

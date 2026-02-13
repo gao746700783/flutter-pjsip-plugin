@@ -1,9 +1,14 @@
 package com.android.pjsip.plugin.helper
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.hardware.camera2.CameraManager
-import com.android.pjsip.plugin.ui.CallActivity
+import android.widget.Toast
+import com.android.pjsip.plugin.ui.CallingActivity
+import com.android.pjsip.plugin.ui.IncomingActivity
+import com.android.pjsip.plugin.ui.OutgoingActivity
 import io.flutter.plugin.common.EventChannel
 import net.gotev.sipservice.BroadcastEventReceiver
 import net.gotev.sipservice.Logger
@@ -11,7 +16,10 @@ import net.gotev.sipservice.MediaState
 import net.gotev.sipservice.SipAccountData
 import net.gotev.sipservice.SipAccountTransport
 import net.gotev.sipservice.SipServiceCommand
+import org.pjsip.pjsua2.pjsip_inv_state
 import org.pjsip.pjsua2.pjsip_status_code
+import java.lang.ref.WeakReference
+import kotlin.jvm.java
 
 class PjsipManager {
 
@@ -23,35 +31,35 @@ class PjsipManager {
     private var isInitialized = false
 
     private lateinit var mContext: Context
+    private lateinit var mActWeakRef: WeakReference<Activity>
     private var mStatusSink: EventChannel.EventSink? = null
     private var accountID: String? = null
     private var mRegCode: Int? = pjsip_status_code.PJSIP_SC_NULL
+    private val mPjsipStatusListeners:MutableList<PjsipStatusListener> = mutableListOf()
 
     @Synchronized
     fun getInstance(): PjsipManager {
         return instance
     }
 
-    fun init(context: Context, eventSink: EventChannel.EventSink?) {
+    fun init(appContext: Context, actContext: WeakReference<Activity>,eventSink: EventChannel.EventSink?) {
         if (this.isInitialized) {
             Logger.debug(TAG, "PjsipManager is already initialized.")
             return
         }
         Logger.error(TAG, "init called...")
         this.isInitialized = true
-        this.mContext = context
-        if (this.mContext !is Application) {
-            Logger.error(TAG, "Recommended to use Application instance.")
-        }
+        this.mContext = appContext
+        this.mActWeakRef = actContext
         this.mStatusSink = eventSink
 
         Logger.setLogLevel(Logger.LogLevel.DEBUG)
         SipServiceCommand.enableSipDebugLogging(true)
-        val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val cameraManager = mContext.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         SipServiceCommand.setCameraManager(cameraManager)
-        SipServiceCommand.start(context)
+        SipServiceCommand.start(mContext)
+        this.mReceiver.register(mContext)
         //requestPermissions()
-        this.mReceiver.register(context)
     }
 
     fun unInit() {
@@ -137,6 +145,16 @@ class PjsipManager {
         }
     }
 
+    fun addPjsipStatusListener(listener: PjsipStatusListener) {
+        if (mPjsipStatusListeners.contains(listener)) {
+            return
+        }
+        mPjsipStatusListeners.add(listener)
+    }
+    fun removePjsipStatusListener(listener: PjsipStatusListener) {
+        mPjsipStatusListeners.remove(listener)
+    }
+
     private var mReceiver: BroadcastEventReceiver = object : BroadcastEventReceiver() {
         override fun onRegistration(accountID: String, registrationStateCode: Int) {
             super.onRegistration(accountID, registrationStateCode)
@@ -156,14 +174,7 @@ class PjsipManager {
             isVideo: Boolean
         ) {
             super.onIncomingCall(accountID, callID, displayName, remoteUri, isVideo)
-            CallActivity.startActivityIn(
-                receiverContext,
-                accountID,
-                callID,
-                displayName,
-                remoteUri,
-                isVideo
-            )
+            startActivityIn(IncomingActivity::class.java, accountID, callID, displayName, remoteUri, isVideo)
         }
 
         override fun onOutgoingCall(
@@ -175,20 +186,7 @@ class PjsipManager {
             isTransfer: Boolean
         ) {
             super.onOutgoingCall(accountID, callID, number, isVideo, isVideoConference, isTransfer)
-            CallActivity.startActivityOut(
-                receiverContext,
-                accountID,
-                callID,
-                number,
-                isVideo,
-                isVideoConference
-            )
-//            viewModel.updateCallID(callID.toString())
-//            //viewModel.updateDisplayName(displayName)
-//            //viewModel.updateRemoteUri(remoteUri)
-//            viewModel.updateNumber(number)
-//            viewModel.updateIsVideo(isVideo)
-//            viewModel.updateIsVideoConference(isVideoConference)
+            startActivityIn(OutgoingActivity::class.java, accountID, callID, "", number, isVideo)
         }
 
         override fun onCallState(
@@ -199,10 +197,35 @@ class PjsipManager {
             connectTimestamp: Long
         ) {
             super.onCallState(accountID, callID, callStateCode, callStatusCode, connectTimestamp)
-//            viewModel.updateCallStateCode(callStateCode)
-//            if (callStateCode == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
-//                SipServiceCommand.setCallMute(this@SinglePageActivity, accountID, callID, true)
-//            }
+            this@PjsipManager.mPjsipStatusListeners.forEach {
+                it.onPjsipStatus(callStateCode)
+            }
+
+            if (pjsip_inv_state.PJSIP_INV_STATE_CALLING == callStateCode) {
+                // 去电
+                // startActivityIn(mContext, OutgoingActivity::class.java, accountID, callID, "", "", false)
+            } else if (pjsip_inv_state.PJSIP_INV_STATE_INCOMING == callStateCode) {
+                //来电
+                // startActivityIn(mContext, IncomingActivity::class.java, accountID, callID, "", "", false)
+            } else if (pjsip_inv_state.PJSIP_INV_STATE_EARLY == callStateCode) {
+                //响铃
+//                mTextViewCallState.setText("early")
+            } else if (pjsip_inv_state.PJSIP_INV_STATE_CONNECTING == callStateCode) {
+                //连接中
+//                mTextViewCallState.setText("connecting")
+            } else if (pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED == callStateCode) {
+                //连接成功
+//                mTextViewCallState.setText("confirmed")
+//                showLayout(CallActivity.TYPE_CALL_CONNECTED)
+                startActivityIn( CallingActivity::class.java, accountID, callID, "", "", false)
+            } else if (pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED == callStateCode) {
+                //断开连接
+//                finish()
+            } else if (pjsip_inv_state.PJSIP_INV_STATE_NULL == callStateCode) {
+                //未知错误
+//                Toast.makeText(this@CallActivity, "未知错误", Toast.LENGTH_SHORT).show()
+//                finish()
+            }
         }
 
         override fun onVideoSize(width: Int, height: Int) {
@@ -231,6 +254,33 @@ class PjsipManager {
 //                viewModel.updateCallVideoMute(stateValue)
 //            }
         }
+    }
+
+    fun startActivityIn(
+//        context: Context,
+        clazz: Class<out Activity>,
+        accountID: String?,
+        callID: Int,
+        displayName: String?,
+        remoteUri: String?,
+        isVideo: Boolean
+    ) {
+        if (mActWeakRef.get() == null) {
+            return
+        }
+        val intent = Intent(mActWeakRef.get(), clazz)
+        intent.putExtra("accountID", accountID)
+        intent.putExtra("callID", callID)
+        intent.putExtra("displayName", displayName)
+        intent.putExtra("remoteUri", remoteUri)
+        intent.putExtra("isVideo", isVideo)
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        mActWeakRef.get()?.startActivity(intent)
+    }
+
+    interface PjsipStatusListener {
+        fun onPjsipStatus(code: Int)
     }
 
 }

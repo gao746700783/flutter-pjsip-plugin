@@ -5,3 +5,9 @@
 2. audio call
 3. video call
 
+## 0.0.2
+* remove some unused config
+
+## 0.0.3
+1. ui changes,calling page better
+

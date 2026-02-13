@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/main_bg_color">
+
+    <!-- 联系人头像/照片 -->
+    <ImageView
+        android:id="@+id/contact_avatar_incoming"
+        android:layout_width="@dimen/avatar_xlarge"
+        android:layout_height="@dimen/avatar_xlarge"
+        android:src="@drawable/ic_default_avatar"
+        android:scaleType="centerCrop"
+        android:layout_marginTop="@dimen/margin_huge"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 联系人信息 -->
+    <LinearLayout
+        android:id="@+id/contact_info_incoming"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/contact_avatar_incoming"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/margin_large">
+
+        <TextView
+            android:id="@+id/contact_name_incoming"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="联系人姓名"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_xxlarge"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/call_status_incoming"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="邀请您进行视频通话..."
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_large"
+            android:layout_marginTop="@dimen/margin_small" />
+    </LinearLayout>
+
+    <!-- 接听/拒绝按钮区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingHorizontal="@dimen/padding_large"
+        android:paddingVertical="@dimen/padding_xlarge"
+        android:layout_marginBottom="@dimen/margin_huge"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 拒绝按钮 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_decline"
+                android:layout_width="@dimen/large_button_size"
+                android:layout_height="@dimen/large_button_size"
+                android:src="@drawable/ic_calling_hangup"
+                android:contentDescription="拒绝" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="拒绝"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_medium"
+                android:layout_marginTop="@dimen/margin_medium" />
+        </LinearLayout>
+
+        <!-- 接听按钮 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_answer"
+                android:layout_width="@dimen/large_button_size"
+                android:layout_height="@dimen/large_button_size"
+                android:src="@drawable/ic_calling_accept"
+                android:background="@drawable/incoming_answer_background"
+                android:contentDescription="接听" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="接听"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_medium"
+                android:layout_marginTop="@dimen/margin_medium" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

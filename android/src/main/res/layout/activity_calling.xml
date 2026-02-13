@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/main_bg_color">
+
+    <!-- 远程视频视图 -->
+    <SurfaceView
+        android:id="@+id/svRemote"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 本地视频视图 (画中画) -->
+    <SurfaceView
+        android:elevation="10dp"
+        android:id="@+id/svLocal"
+        android:layout_width="160dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintDimensionRatio="h,4:3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_default="wrap" />
+
+    <!-- 通话信息区域 -->
+    <LinearLayout
+        android:id="@+id/call_info_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/margin_large"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/remote_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="联系人"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_large"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/call_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_medium"
+            android:layout_marginTop="@dimen/margin_small" />
+    </LinearLayout>
+
+    <!-- 通话控制栏 -->
+    <LinearLayout
+        android:id="@+id/call_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="@dimen/padding_large"
+        android:layout_marginBottom="@dimen/margin_huge"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 静音按钮 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_mute"
+                android:layout_width="@dimen/control_button_size"
+                android:layout_height="@dimen/control_button_size"
+                android:src="@drawable/mute_normal"
+                android:background="@drawable/incoming_answer_background"
+                android:contentDescription="静音" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="静音"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_small"
+                android:layout_marginTop="@dimen/margin_small" />
+        </LinearLayout>
+
+        <!-- 视频开关按钮 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_video"
+                android:layout_width="@dimen/control_button_size"
+                android:layout_height="@dimen/control_button_size"
+                android:src="@drawable/switch_camera"
+                android:background="@drawable/incoming_answer_background"
+                android:contentDescription="视频" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="视频"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_small"
+                android:layout_marginTop="@dimen/margin_small" />
+        </LinearLayout>
+
+        <!-- 挂断按钮 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btn_end_call"
+                android:layout_width="@dimen/control_button_size"
+                android:layout_height="@dimen/control_button_size"
+                android:src="@drawable/hangup"
+                android:background="@drawable/incoming_answer_background"
+                android:contentDescription="挂断" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="挂断"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_small"
+                android:layout_marginTop="@dimen/margin_small" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

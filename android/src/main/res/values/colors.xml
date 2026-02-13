@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="call_background">#000000</color>
+    <color name="outgoing_call_background">#7078B1</color>
+    <color name="incoming_call_background">#546756</color>
+    <color name="control_button_normal">#80ffffff</color>
+    <color name="control_button_end">#f44336</color>
+    <color name="incoming_answer">#4caf50</color>
+    <color name="incoming_decline">#f44336</color>
+
+    <color name="status_bar_background_light">@color/palette_white</color>
+    <color name="navigation_bar_background_light">@color/palette_white</color>
+    <color name="status_bar_background_dark">@color/palette_black_800</color>
+    <color name="navigation_bar_background_dark">@color/palette_black_800</color>
+    <color name="main_bg_color">@color/palette_black_900</color>
+
+</resources>

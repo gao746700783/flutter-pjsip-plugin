@@ -2,10 +2,44 @@
     package="com.android.pjsip.plugin">
 
     <application>
+        <!-- 针对不同API级别的挖孔屏适配 -->
+        <meta-data
+            android:name="android.notch_support"
+            android:value="true" />
+
+        <!-- 针对华为挖孔屏 -->
+        <meta-data
+            android:name="android.huawei.notch_support"
+            android:value="true" />
+
+        <!-- 针对小米挖孔屏 -->
+        <meta-data
+            android:name="notch.config"
+            android:value="portrait|landscape" />
+
+        <!-- 针对Oppo挖孔屏 -->
+        <meta-data
+            android:name="android.oppo.notch_support"
+            android:value="true" />
+
+        <!-- 针对Vivo挖孔屏 -->
+        <meta-data
+            android:name="android.vivo.notch_support"
+            android:value="true" />
+
         <activity
-            android:name=".ui.CallActivity"
+            android:name=".ui.IncomingActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+            android:theme="@style/Base.Meeting" />
+        <activity
+            android:name=".ui.OutgoingActivity"
+            android:exported="true"
+            android:theme="@style/Base.Meeting" />
+        <activity
+            android:name=".ui.CallingActivity"
+            android:exported="true"
+            android:theme="@style/Base.Meeting" />
+
     </application>
 
 </manifest>

@@ -2,22 +2,26 @@ package com.android.pjsip.plugin
 
 import com.android.pjsip.plugin.helper.PjsipManager
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import java.lang.ref.WeakReference
 
 
 /** FlutterPjsipPlugin */
-class FlutterPjsipPlugin: FlutterPlugin, MethodCallHandler {
+class FlutterPjsipPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
   private lateinit var mContext : android.content.Context
+  private var activity: android.app.Activity? = null
 
   private var mLoginStatusEventChannel: EventChannel? = null
   private var mLoginStatusEventSink: EventSink? = null
@@ -46,7 +50,7 @@ class FlutterPjsipPlugin: FlutterPlugin, MethodCallHandler {
         result.success("Android ${android.os.Build.VERSION.RELEASE}")
       }
       "init" -> {
-        PjsipManager.instance.init(mContext,mLoginStatusEventSink)
+        PjsipManager.instance.init(mContext, WeakReference(activity),mLoginStatusEventSink)
         result.success(null)
       }
       "loginSip" -> {
@@ -79,6 +83,23 @@ class FlutterPjsipPlugin: FlutterPlugin, MethodCallHandler {
 
       else -> result.notImplemented()
     }
+  }
+
+  // ActivityAware 实现
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    activity = binding.activity
+  }
+
+  override fun onDetachedFromActivity() {
+    activity = null
+  }
+
+  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+    activity = binding.activity
+  }
+
+  override fun onDetachedFromActivityForConfigChanges() {
+    activity = null
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

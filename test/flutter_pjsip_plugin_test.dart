@@ -24,13 +24,11 @@ class MockFlutterPjsipPluginPlatform
   @override
   Future loginSip(String userName, String displayName, String password,
       String sipIp, String port) {
-    // TODO: implement loginSip
     throw UnimplementedError();
   }
 
   @override
   Future logoutSip() {
-    // TODO: implement logoutSip
     throw UnimplementedError();
   }
 
@@ -47,7 +45,11 @@ class MockFlutterPjsipPluginPlatform
 
   @override
   Future setAutoAnswer(bool autoAnswer) {
-    // TODO: implement setAutoAnswer
+    throw UnimplementedError();
+  }
+
+  @override
+  Future initWithCb(LoginStatusChangeCallback callback) {
     throw UnimplementedError();
   }
 }
