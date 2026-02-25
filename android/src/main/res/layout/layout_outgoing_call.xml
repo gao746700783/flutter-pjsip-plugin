@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/margin_huge" />
+        android:layout_marginTop="@dimen/large_button_size" />
 
     <!-- 联系人信息 -->
     <LinearLayout
@@ -89,29 +89,32 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <!-- 挂断按钮 -->
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/btn_cancel_call"
             android:layout_width="@dimen/control_button_size"
             android:layout_height="@dimen/control_button_size"
             android:src="@drawable/hangup"
+            android:padding="10dp"
             android:background="@drawable/incoming_decline_background"
             android:contentDescription="取消呼叫"
             android:layout_marginEnd="@dimen/margin_large" />
 
         <!-- 扬声器按钮 -->
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/btn_speaker_outgoing"
             android:layout_width="@dimen/control_button_size"
             android:layout_height="@dimen/control_button_size"
+            android:padding="10dp"
             android:src="@drawable/mute_normal"
             android:background="@drawable/incoming_answer_background"
             android:contentDescription="扬声器" />
 
         <!-- 静音按钮 -->
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/btn_camera_outgoing"
             android:layout_width="@dimen/control_button_size"
             android:layout_height="@dimen/control_button_size"
+            android:padding="10dp"
             android:src="@drawable/switch_camera"
             android:background="@drawable/incoming_answer_background"
             android:contentDescription="静音"

@@ -2,6 +2,7 @@ package com.android.pjsip.plugin.ui
 
 import android.widget.Toast
 import com.android.pjsip.plugin.databinding.LayoutIncomingCallBinding
+import com.android.pjsip.plugin.helper.Constants
 import com.android.pjsip.plugin.helper.PjsipManager
 import com.android.pjsip.plugin.ui.base.BaseVMActivity
 import net.gotev.sipservice.SipServiceCommand
@@ -24,6 +25,12 @@ class IncomingActivity : BaseVMActivity<LayoutIncomingCallBinding>() {
         }
     }
 
+    private var accountID = ""
+    private var callID = 0
+    private var displayName = ""
+    private var remoteUri = ""
+    private var isVideo = false
+
     override fun onDestroy() {
         super.onDestroy()
         PjsipManager.instance.removePjsipStatusListener(statusListener)
@@ -41,11 +48,11 @@ class IncomingActivity : BaseVMActivity<LayoutIncomingCallBinding>() {
         super.initUiAndData()
         PjsipManager.instance.addPjsipStatusListener(statusListener)
 
-        val accountID = intent?.extras?.getString("accountID") ?: ""
-        val callID = intent?.extras?.getInt("callID") ?: 0
-        val displayName = intent?.extras?.getString("displayName") ?: ""
-        val remoteUri = intent?.extras?.getString("remoteUri") ?: ""
-        val isVideo = intent?.extras?.getBoolean("isVideo") == true
+        accountID = intent?.extras?.getString(Constants.ACCOUNT_ID) ?: ""
+        callID = intent?.extras?.getInt(Constants.CALL_ID) ?: 0
+        displayName = intent?.extras?.getString(Constants.DISPLAY_NAME) ?: ""
+        remoteUri = intent?.extras?.getString(Constants.REMOTE_URI) ?: ""
+        isVideo = intent?.extras?.getBoolean(Constants.IS_VIDEO) == true
 
 
         views.btnDecline.setOnClickListener {

@@ -1,10 +1,12 @@
 package com.android.pjsip.plugin.ui
 
-import android.view.SurfaceHolder
 import com.android.pjsip.plugin.databinding.ActivityCallingBinding
+import com.android.pjsip.plugin.helper.Constants
 import com.android.pjsip.plugin.helper.PjsipManager
 import com.android.pjsip.plugin.ui.base.BaseVMActivity
+import com.android.pjsip.plugin.ui.widget.TextureViewRenderer
 import net.gotev.sipservice.Logger
+import net.gotev.sipservice.MediaState
 import net.gotev.sipservice.SipServiceCommand
 import org.pjsip.pjsua2.pjsip_inv_state
 
@@ -21,9 +23,22 @@ class CallingActivity : BaseVMActivity<ActivityCallingBinding>() {
                     finish()
                 }
             }
+
+            override fun onPjsipMediaState(stateType: MediaState?, stateValue: Boolean) {
+                if (stateType == MediaState.LOCAL_VIDEO_MUTE) {
+                    // do nothing
+                } else if (stateType == MediaState.LOCAL_MUTE) {
+                    // do nothing
+                }
+            }
         }
 
     private var micMute = false
+    private var accountID = ""
+    private var callID = 0
+    private var displayName = ""
+    private var remoteUri = ""
+    private var isVideo = false
 
     override fun onDestroy() {
         super.onDestroy()
@@ -38,66 +53,32 @@ class CallingActivity : BaseVMActivity<ActivityCallingBinding>() {
         super.initUiAndData()
         PjsipManager.instance.addPjsipStatusListener(statusListener)
 
-        val accountID = intent?.extras?.getString("accountID") ?: ""
-        val callID = intent?.extras?.getInt("callID") ?: 0
-        val displayName = intent?.extras?.getString("displayName") ?: ""
-        val remoteUri = intent?.extras?.getString("remoteUri") ?: ""
-        val isVideo = intent?.extras?.getBoolean("isVideo") == true
+        accountID = intent?.extras?.getString(Constants.ACCOUNT_ID) ?: ""
+        callID = intent?.extras?.getInt(Constants.CALL_ID) ?: 0
+        displayName = intent?.extras?.getString(Constants.DISPLAY_NAME) ?: ""
+        remoteUri = intent?.extras?.getString(Constants.REMOTE_URI) ?: ""
+        isVideo = intent?.extras?.getBoolean(Constants.IS_VIDEO) == true
 
-        views.svLocal.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(holder: SurfaceHolder) {
-                Logger.debug(TAG, "surfaceHolder" + holder.surface + "surfaceCreated")
-                SipServiceCommand.startVideoPreview(
-                    this@CallingActivity,
-                    accountID,
-                    callID,
-                    holder.surface
-                )
-            }
-
-            override fun surfaceChanged(holder: SurfaceHolder, i: Int, i1: Int, i2: Int) {
-                Logger.debug(TAG, "surfaceHolder" + holder.surface + "surfaceChanged")
-                SipServiceCommand.startVideoPreview(
-                    this@CallingActivity,
-                    accountID,
-                    callID,
-                    holder.surface
-                )
-            }
-
-            override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
-                Logger.debug(TAG, "surfaceHolder" + surfaceHolder.surface + "surfaceDestroyed")
+        views.svLocal.setOnSurfaceListener(object : TextureViewRenderer.OnRendererListener {
+            override fun onRendererReady() {
+                Logger.debug(TAG, "localRendererReady")
+                views.svLocal.surfaceRenderer?.let {
+                    SipServiceCommand.startVideoPreview(
+                        this@CallingActivity, accountID, callID, it
+                    )
+                }
             }
         })
+        views.svLocal.setMirror()
 
-        views.svRemote.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(holder: SurfaceHolder) {
-                Logger.debug(TAG, "surfaceHolder" + holder.surface + "surfaceCreated")
-                SipServiceCommand.setupIncomingVideoFeed(
-                    this@CallingActivity,
-                    accountID,
-                    callID,
-                    holder.surface
-                )
-            }
-
-            override fun surfaceChanged(
-                holder: SurfaceHolder,
-                format: Int,
-                width: Int,
-                height: Int
-            ) {
-                Logger.debug(TAG, "surfaceChanged")
-                SipServiceCommand.setupIncomingVideoFeed(
-                    this@CallingActivity,
-                    accountID,
-                    callID,
-                    holder.surface
-                )
-            }
-
-            override fun surfaceDestroyed(holder: SurfaceHolder) {
-                Logger.debug(TAG, "surfaceDestroyed")
+        views.remoteRenderer.setOnSurfaceListener(object : TextureViewRenderer.OnRendererListener {
+            override fun onRendererReady() {
+                Logger.debug(TAG, "remoteRendererReady")
+                views.remoteRenderer.surfaceRenderer?.let {
+                    SipServiceCommand.setupIncomingVideoFeed(
+                        this@CallingActivity, accountID, callID, it
+                    )
+                }
             }
         })
 

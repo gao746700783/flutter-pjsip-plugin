@@ -10,4 +10,6 @@
 
 ## 0.0.3
 1. ui changes,calling page better
+2. add calling in/calling out,and calling page changes;
+3. adapt ui and theme config;
 

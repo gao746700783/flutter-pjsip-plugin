@@ -8,19 +8,24 @@
     android:background="@color/main_bg_color">
 
     <!-- 远程视频视图 -->
-    <SurfaceView
-        android:id="@+id/svRemote"
+    <com.android.pjsip.plugin.ui.widget.TextureViewRenderer
+        android:id="@+id/remoteRenderer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
+<!--    <SurfaceView-->
+<!--        android:id="@+id/svRemote"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent" />-->
 
     <!-- 本地视频视图 (画中画) -->
-    <SurfaceView
-        android:elevation="10dp"
+<!--    <SurfaceView-->
+    <com.android.pjsip.plugin.ui.widget.TextureViewRenderer
         android:id="@+id/svLocal"
         android:layout_width="160dp"
         android:layout_height="0dp"
         android:layout_marginTop="70dp"
         android:layout_marginStart="20dp"
+        android:elevation="10dp"
         app:layout_constraintDimensionRatio="h,4:3"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

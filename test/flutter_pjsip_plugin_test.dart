@@ -34,14 +34,11 @@ class MockFlutterPjsipPluginPlatform
 
   @override
   Future makeCall(String phoneNo, bool isVideo) {
-    // TODO: implement makeCall
     throw UnimplementedError();
   }
 
   @override
-  void onLoginStatusChange(LoginStatusChangeCallback callback) {
-    // TODO: implement onLoginStatusChange
-  }
+  void onLoginStatusChange(LoginStatusChangeCallback callback) {}
 
   @override
   Future setAutoAnswer(bool autoAnswer) {

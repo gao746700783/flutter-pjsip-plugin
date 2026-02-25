@@ -9,11 +9,11 @@
     <!-- 联系人头像/照片 -->
     <ImageView
         android:id="@+id/contact_avatar_incoming"
-        android:layout_width="@dimen/avatar_xlarge"
-        android:layout_height="@dimen/avatar_xlarge"
+        android:layout_width="@dimen/avatar_large"
+        android:layout_height="@dimen/avatar_large"
         android:src="@drawable/ic_default_avatar"
         android:scaleType="centerCrop"
-        android:layout_marginTop="@dimen/margin_huge"
+        android:layout_marginTop="@dimen/large_button_size"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -70,10 +70,10 @@
             android:orientation="vertical"
             android:gravity="center">
 
-            <ImageButton
+            <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/btn_decline"
-                android:layout_width="@dimen/large_button_size"
-                android:layout_height="@dimen/large_button_size"
+                android:layout_width="@dimen/control_button_size"
+                android:layout_height="@dimen/control_button_size"
                 android:src="@drawable/ic_calling_hangup"
                 android:contentDescription="拒绝" />
 
@@ -94,11 +94,12 @@
             android:orientation="vertical"
             android:gravity="center">
 
-            <ImageButton
+            <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/btn_answer"
-                android:layout_width="@dimen/large_button_size"
-                android:layout_height="@dimen/large_button_size"
+                android:layout_width="@dimen/control_button_size"
+                android:layout_height="@dimen/control_button_size"
                 android:src="@drawable/ic_calling_accept"
+                android:padding="10dp"
                 android:background="@drawable/incoming_answer_background"
                 android:contentDescription="接听" />
 

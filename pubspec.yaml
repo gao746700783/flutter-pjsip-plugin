@@ -1,6 +1,6 @@
 name: flutter_pjsip_plugin
 description: "flutter_pjsip_plugin is a package plugin for Flutter developers to use pjsip easily."
-version: 0.0.2
+version: 0.0.3
 auther: gao746700783
 repository: https://github.com/gao746700783/flutter-pjsip-plugin
 

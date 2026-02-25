@@ -1,11 +1,9 @@
 package com.android.pjsip.plugin.helper
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.hardware.camera2.CameraManager
-import android.widget.Toast
 import com.android.pjsip.plugin.ui.CallingActivity
 import com.android.pjsip.plugin.ui.IncomingActivity
 import com.android.pjsip.plugin.ui.OutgoingActivity
@@ -19,7 +17,6 @@ import net.gotev.sipservice.SipServiceCommand
 import org.pjsip.pjsua2.pjsip_inv_state
 import org.pjsip.pjsua2.pjsip_status_code
 import java.lang.ref.WeakReference
-import kotlin.jvm.java
 
 class PjsipManager {
 
@@ -35,14 +32,18 @@ class PjsipManager {
     private var mStatusSink: EventChannel.EventSink? = null
     private var accountID: String? = null
     private var mRegCode: Int? = pjsip_status_code.PJSIP_SC_NULL
-    private val mPjsipStatusListeners:MutableList<PjsipStatusListener> = mutableListOf()
+    private val mPjsipStatusListeners: MutableList<PjsipStatusListener> = mutableListOf()
 
     @Synchronized
     fun getInstance(): PjsipManager {
         return instance
     }
 
-    fun init(appContext: Context, actContext: WeakReference<Activity>,eventSink: EventChannel.EventSink?) {
+    fun init(
+        appContext: Context,
+        actContext: WeakReference<Activity>,
+        eventSink: EventChannel.EventSink?
+    ) {
         if (this.isInitialized) {
             Logger.debug(TAG, "PjsipManager is already initialized.")
             return
@@ -151,6 +152,7 @@ class PjsipManager {
         }
         mPjsipStatusListeners.add(listener)
     }
+
     fun removePjsipStatusListener(listener: PjsipStatusListener) {
         mPjsipStatusListeners.remove(listener)
     }
@@ -174,7 +176,14 @@ class PjsipManager {
             isVideo: Boolean
         ) {
             super.onIncomingCall(accountID, callID, displayName, remoteUri, isVideo)
-            startActivityIn(IncomingActivity::class.java, accountID, callID, displayName, remoteUri, isVideo)
+            startActivityIn(
+                IncomingActivity::class.java,
+                accountID,
+                callID,
+                displayName,
+                remoteUri,
+                isVideo
+            )
         }
 
         override fun onOutgoingCall(
@@ -217,7 +226,7 @@ class PjsipManager {
                 //连接成功
 //                mTextViewCallState.setText("confirmed")
 //                showLayout(CallActivity.TYPE_CALL_CONNECTED)
-                startActivityIn( CallingActivity::class.java, accountID, callID, "", "", false)
+                startActivityIn(CallingActivity::class.java, accountID, callID, "", "", false)
             } else if (pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED == callStateCode) {
                 //断开连接
 //                finish()
@@ -248,11 +257,9 @@ class PjsipManager {
             stateValue: Boolean
         ) {
             super.onCallMediaState(accountID, callID, stateType, stateValue)
-//            if (stateType == MediaState.LOCAL_MUTE) {
-//                viewModel.updateCallVoiceMute(stateValue)
-//            } else if (stateType == MediaState.LOCAL_VIDEO_MUTE) {
-//                viewModel.updateCallVideoMute(stateValue)
-//            }
+            this@PjsipManager.mPjsipStatusListeners.forEach {
+                it.onPjsipMediaState(stateType, stateValue)
+            }
         }
     }
 
@@ -269,11 +276,11 @@ class PjsipManager {
             return
         }
         val intent = Intent(mActWeakRef.get(), clazz)
-        intent.putExtra("accountID", accountID)
-        intent.putExtra("callID", callID)
-        intent.putExtra("displayName", displayName)
-        intent.putExtra("remoteUri", remoteUri)
-        intent.putExtra("isVideo", isVideo)
+        intent.putExtra(Constants.ACCOUNT_ID, accountID)
+        intent.putExtra(Constants.CALL_ID, callID)
+        intent.putExtra(Constants.DISPLAY_NAME, displayName)
+        intent.putExtra(Constants.REMOTE_URI, remoteUri)
+        intent.putExtra(Constants.IS_VIDEO, isVideo)
 //        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 //        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         mActWeakRef.get()?.startActivity(intent)
@@ -281,6 +288,7 @@ class PjsipManager {
 
     interface PjsipStatusListener {
         fun onPjsipStatus(code: Int)
+        fun onPjsipMediaState(stateType: MediaState?, stateValue: Boolean) {}
     }
 
 }

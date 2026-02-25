@@ -15,7 +15,8 @@ class AboutWidget extends StatelessWidget {
           child: Center(
             child: Column(
               children: <Widget>[
-                Text('GitHub:\nhttps://github.com/XXXXXXXX.git'),
+                Text(
+                    'GitHub:\nhttps://github.com/gao746700783/flutter-pjsip-plugin'),
               ],
             ),
           ),
